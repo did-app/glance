@@ -1,0 +1,14 @@
+name: test
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      # - name: Build the stack
+      #   run: docker-compose up -d
+      - name: Run mix test
+        # NOTE gleam build is required due to an ordering problem with deps compiling
+        run: docker-compose run glance bash -c "mix local.hex --force && mix local.rebar --force && mix deps.get && gleam build && mix test"
