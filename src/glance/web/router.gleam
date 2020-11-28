@@ -8,6 +8,8 @@ import gleam/http.{Request, Response}
 import gleam/httpc
 import gleam/json
 import floki
+import glance/strategy/strategy
+import glance/snapshot
 
 pub fn set_resp_json(response, data) {
   let body =
@@ -52,11 +54,10 @@ pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) 
             |> http.set_host(host)
             |> http.set_path(path)
           assert Ok(Response(status: 200, body: html, ..)) = httpc.send(req)
-          assert Ok(tree) = floki.parse_document(html)
-          let title = get_title(tree)
-          let data = json.object([tuple("title", json.string(title))])
+          assert Ok(document) = floki.parse_document(html)
+          let snapshot = strategy.apply(host, document)
           http.response(200)
-          |> set_resp_json(data)
+          |> set_resp_json(snapshot.to_json(snapshot))
         }
       }
   }
