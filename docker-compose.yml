@@ -16,6 +16,7 @@ services:
       - deps:/opt/app/deps
       # NOTE Issue Gleam shouldn't delete gen directory.
       # - gen:/opt/app/gen
-    network_mode: host
+    ports:
+      - "9000:9000"
     environment:
       PORT: 9000
