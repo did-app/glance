@@ -10,12 +10,13 @@ pub fn apply(document) {
     // The first image is always a profile image
     |> list.drop(1)
 
-  let image_sources = floki.attribute(image_tags, "src")
-  |> list.map(fn(src) {
+  let image_sources =
+    floki.attribute(image_tags, "src")
+    |> list.map(fn(src) {
       // The images are all cropped to a tumbnail
       assert [uncropped, _] = string.split(src, "=")
       uncropped
-  })
+    })
   assert Ok(title) = default.get_og_title(document)
   ImageReel(title: title, images: image_sources)
 }
