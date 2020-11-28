@@ -7,7 +7,6 @@ defmodule Glance.Application do
     port = port()
 
     true = OpenTelemetry.register_application_tracer(:glance)
-    Application.get_env(:opentelemetry, :processors)
 
     children = [
       %{
