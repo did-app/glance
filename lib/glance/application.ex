@@ -6,6 +6,8 @@ defmodule Glance.Application do
   def start(_type, _args) do
     port = port()
 
+    OpenTelemetry.register_application_tracer(:glance)
+
     children = [
       %{
         id: :cowboy,
