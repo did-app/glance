@@ -32,7 +32,7 @@ fn get_title(document) {
   }
 }
 
-fn get_og_title(document) {
+pub fn get_og_title(document) {
   let og_tags = floki.find(document, "meta[property='og:title']")
   list.head(floki.attribute(og_tags, "content"))
 }
@@ -58,14 +58,14 @@ fn get_header_tag_title(document) {
 }
 
 fn get_url(document) {
-    case get_og_url(document) {
-      Ok(url) -> url
-      Error(Nil) ->
-        case get_canonical_url(document) {
-          Ok(url) -> url
-          Error(Nil) -> "TODO fallback url"
-        }
-    }
+  case get_og_url(document) {
+    Ok(url) -> url
+    Error(Nil) ->
+      case get_canonical_url(document) {
+        Ok(url) -> url
+        Error(Nil) -> "TODO fallback url"
+      }
+  }
 }
 
 fn get_og_url(document) {
