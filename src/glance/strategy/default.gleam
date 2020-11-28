@@ -25,6 +25,7 @@ fn get_title(document) {
             Error(Nil) ->
               case get_header_tag_title(document) {
                 Ok(title) -> title
+                Error(Nil) -> "TODO fallback title"
               }
           }
       }
@@ -62,6 +63,7 @@ fn get_url(document) {
       Error(Nil) ->
         case get_canonical_url(document) {
           Ok(url) -> url
+          Error(Nil) -> "TODO fallback url"
         }
     }
 }
@@ -85,6 +87,7 @@ fn get_description(document) {
         Error(Nil) ->
           case get_document_description(document) {
             Ok(description) -> description
+            Error(Nil) -> "TODO fallback description"
           }
       }
   }
