@@ -27,12 +27,10 @@ pub fn set_resp_json(response, data) {
 
 pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) {
   let tracer = open_telemetry.get_tracer(atom.create_from_string("glance"))
-  io.debug(tracer)
   open_telemetry.with_span(
     tracer,
     atom.create_from_string("http.request"),
     fn(x) {
-      io.debug(x)
       case request.method {
         http.Options ->
           http.response(200)
