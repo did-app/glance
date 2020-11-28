@@ -30,7 +30,8 @@ pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) 
   open_telemetry.with_span(
     tracer,
     atom.create_from_string("http.request"),
-    fn(x) {
+    fn(span_context) {
+        open_telemetry.set_attribute(span_context, "foo", "value 1")
       case request.method {
         http.Options ->
           http.response(200)
