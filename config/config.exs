@@ -4,5 +4,8 @@ use Mix.Config
 # config :opentelemetry, :processors, otel_batch_processor: %{exporter: {:otel_exporter_stdout, []}}
 config :opentelemetry, :processors,
   otel_batch_processor: %{
-    exporter: {:opentelemetry_exporter, %{endpoints: [{:http, "localhost", 14250}]}}
+    # exporter: {:opentelemetry_exporter, %{endpoints: [{:http, "localhost", 14250}]}}
+    exporter:
+      {:opentelemetry_zipkin,
+       %{address: "http://localhost:9411/api/v2/spans", local_endpoint: %{service_name: "foo"}}}
   }

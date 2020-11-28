@@ -29,9 +29,9 @@ pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) 
   let tracer = open_telemetry.get_tracer(atom.create_from_string("glance"))
   open_telemetry.with_span(
     tracer,
-    atom.create_from_string("http.request"),
+    "http.request",
     fn(span_context) {
-        open_telemetry.set_attribute(span_context, "foo", "value 1")
+      open_telemetry.set_attribute(span_context, "foo", "value 1")
       case request.method {
         http.Options ->
           http.response(200)

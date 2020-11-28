@@ -34,7 +34,7 @@ defmodule PlumMail.MixProject do
        tag: "4bae91f3129fbf517aae084695db5671eb115931",
        manager: :mix,
        override: true},
-      # {:opentelemetry_zipkin, "~> 0.3.0"},
+      {:opentelemetry_zipkin, "~> 0.4.0"},
       {:opentelemetry_exporter, "~> 0.5.0"},
       {:opentelemetry, "~> 0.5.0"},
       {:opentelemetry_api, "~> 0.5.0"}
