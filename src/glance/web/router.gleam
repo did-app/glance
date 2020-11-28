@@ -23,21 +23,6 @@ pub fn set_resp_json(response, data) {
   |> http.set_resp_body(body)
 }
 
-// try is the best way of doing result based or, no works wrong way round
-fn get_title(tree) {
-  case list.head(floki.attribute(
-    floki.find(tree, "meta[property='og:title']"),
-    "content",
-  )) {
-    Ok(title) -> title
-    // Note returns empty string even if element not found
-    // Use list.head option on tree from find
-    // or find_first function
-    // move all into a strategy og module
-    Error(Nil) -> floki.text(floki.find(tree, "head title"))
-  }
-}
-
 pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) {
   case request.method {
     http.Options ->
@@ -57,7 +42,9 @@ pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) 
           assert Ok(document) = floki.parse_document(html)
           let snapshot = strategy.apply(host, document)
           http.response(200)
-          |> set_resp_json(snapshot.to_json(snapshot))
+          |> set_resp_json(json.object([
+            tuple("snapshot", snapshot.to_json(snapshot)),
+          ]))
         }
       }
   }
