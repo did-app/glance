@@ -7,11 +7,12 @@ defmodule Glance.Application do
     port = port()
 
     true = OpenTelemetry.register_application_tracer(:glance)
+    tracer = OpenTelemetry.get_tracer(:glance)
 
     children = [
       %{
         id: :cowboy,
-        start: {:gleam@http@cowboy, :start, [&:glance@web@router.handle(&1, nil), port]}
+        start: {:gleam@http@cowboy, :start, [&:glance@web@router.handle(&1, tracer), port]}
       }
     ]
 

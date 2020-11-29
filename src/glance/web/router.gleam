@@ -25,8 +25,7 @@ pub fn set_resp_json(response, data) {
   |> http.set_resp_body(body)
 }
 
-pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) {
-  let tracer = open_telemetry.get_tracer(atom.create_from_string("glance"))
+pub fn handle(request: Request(BitString), tracer: open_telemetry.Tracer) -> Response(BitBuilder) {
   open_telemetry.with_span(
     tracer,
     "http.request",
