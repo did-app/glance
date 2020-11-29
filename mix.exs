@@ -33,7 +33,10 @@ defmodule PlumMail.MixProject do
        github: "midas-framework/floki",
        tag: "4bae91f3129fbf517aae084695db5671eb115931",
        manager: :mix,
-       override: true}
+       override: true},
+      {:opentelemetry_zipkin, "~> 0.4.0"},
+      {:opentelemetry, "~> 0.5.0"},
+      {:opentelemetry_api, "~> 0.5.0"}
     ]
   end
 end
