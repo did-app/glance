@@ -20,3 +20,9 @@ pub external fn set_attribute(
   value: String,
 ) -> Nil =
   "otel_span" "set_attribute"
+
+pub external fn set_attributes(
+  span: SpanContext,
+  attributes: List(tuple(String, String)),
+) -> Nil =
+  "otel_span" "set_attributes"
