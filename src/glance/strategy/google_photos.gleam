@@ -1,10 +1,23 @@
 import gleam/list
+import gleam/option.{Some}
 import gleam/string
+import gleam/uri.{Uri}
+import gleam/http.{Response}
+import gleam/httpc
 import floki
 import glance/strategy/default
-import glance/snapshot.{ImageReel}
+import glance/preview.{ImageReel}
 
-pub fn apply(document) {
+pub fn scan(uri) {
+  let Uri(path: path, host: Some(host), ..) = uri
+  let request =
+    http.default_req()
+    |> http.set_method(http.Get)
+    |> http.set_host(host)
+    |> http.set_path(path)
+  assert Ok(Response(status: 200, body: html, ..)) = httpc.send(request)
+  assert Ok(document) = floki.parse_document(html)
+
   let image_tags =
     floki.find(document, "body img[src*='https://lh3.googleusercontent.com']")
     // The first image is always a profile image

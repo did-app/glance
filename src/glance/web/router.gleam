@@ -8,8 +8,7 @@ import gleam/http.{Request, Response}
 import gleam/httpc
 import gleam/json
 import floki
-import glance/strategy/strategy
-import glance/snapshot
+import glance
 
 pub fn set_resp_json(response, data) {
   let body =
@@ -31,19 +30,11 @@ pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) 
     _ ->
       case request.query {
         Some(target) -> {
-          assert Ok(uri.Uri(path: path, host: Some(host), ..)) =
-            uri.parse(target)
-          let req =
-            http.default_req()
-            |> http.set_method(http.Get)
-            |> http.set_host(host)
-            |> http.set_path(path)
-          assert Ok(Response(status: 200, body: html, ..)) = httpc.send(req)
-          assert Ok(document) = floki.parse_document(html)
-          let snapshot = strategy.apply(host, document)
+          assert Ok(uri) = uri.parse(target)
+          let preview = glance.scan_uri(uri)
           http.response(200)
           |> set_resp_json(json.object([
-            tuple("snapshot", snapshot.to_json(snapshot)),
+            tuple("preview", glance.preview_to_json(preview)),
           ]))
         }
       }
