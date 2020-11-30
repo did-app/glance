@@ -17,9 +17,9 @@ pub fn scan(uri) {
   assert Ok(document) = floki.parse_document(html)
   Page(
     title: get_title(document),
-    url: get_url(document),
-    image: "TODO",
     description: get_description(document),
+    image: get_image(document),
+    url: get_url(document),
   )
 }
 
@@ -121,4 +121,16 @@ fn get_document_description(document) {
     Ok(description_tag) -> Ok(floki.text([description_tag]))
     Error(Nil) -> Error(Nil)
   }
+}
+
+fn get_image(document) {
+  case get_og_image(document) {
+    Ok(image) -> image
+    Error(Nil) -> "TODO fallback image"
+  }
+}
+
+fn get_og_image(document) {
+  let og_tags = floki.find(document, "meta[property='og:image']")
+  list.head(floki.attribute(og_tags, "content"))
 }
