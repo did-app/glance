@@ -1,11 +1,22 @@
 import gleam/list
+import gleam/option.{Some}
+import gleam/uri.{Uri}
+import gleam/http.{Response}
+import gleam/httpc
 import floki
-import glance/snapshot.{OpenGraph}
+import glance/preview.{Page}
 
-pub fn apply(document) {
-  OpenGraph(
+pub fn scan(uri) {
+  let Uri(path: path, host: Some(host), ..) = uri
+  let request =
+    http.default_req()
+    |> http.set_method(http.Get)
+    |> http.set_host(host)
+    |> http.set_path(path)
+  assert Ok(Response(status: 200, body: html, ..)) = httpc.send(request)
+  assert Ok(document) = floki.parse_document(html)
+  Page(
     title: get_title(document),
-    og_type: "TODO",
     url: get_url(document),
     image: "TODO",
     description: get_description(document),

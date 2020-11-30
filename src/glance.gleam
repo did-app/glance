@@ -4,6 +4,7 @@ import gleam/string
 import gleam/uri.{Uri}
 import gleam/json
 import glance/preview
+import glance/strategy/fallback
 import glance/strategy/google_photos
 import glance/strategy/xkcd
 
@@ -16,8 +17,7 @@ pub fn scan_uri(uri) {
   case host {
     "photos.app.goo.gl" -> google_photos.scan(uri)
     "xkcd.com" | "m.xkcd.com" | "www.xkcd.com" -> xkcd.scan(uri)
-
-    _ -> todo("another strategy")
+    _ -> fallback.scan(uri)
   }
 }
 

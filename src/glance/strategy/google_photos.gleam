@@ -5,7 +5,7 @@ import gleam/uri.{Uri}
 import gleam/http.{Response}
 import gleam/httpc
 import floki
-import glance/strategy/default
+import glance/strategy/fallback
 import glance/preview.{ImageReel}
 
 pub fn scan(uri) {
@@ -30,6 +30,6 @@ pub fn scan(uri) {
       assert [uncropped, _] = string.split(src, "=")
       uncropped
     })
-  assert Ok(title) = default.get_og_title(document)
+  assert Ok(title) = fallback.get_og_title(document)
   ImageReel(title: title, images: image_sources)
 }
