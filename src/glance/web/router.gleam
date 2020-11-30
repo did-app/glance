@@ -38,6 +38,7 @@ pub fn handle(
         span_context,
         otel_http.request_attributes(request),
       )
+      open_telemetry.set_attribute(span_context, "lightstep.access_token", "YftAtQbL7Y3jdENkbqa2CtbhJPSEv1E6VRvnpTseszE2ZPOWFzNpNk9rLpZakyPZl6ljpH3WHuWcF3o7aPCvmLIa8eVN36G/RhYgx3jz>")
       let response =
         case request.method {
           http.Options ->
