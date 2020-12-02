@@ -31,5 +31,5 @@ pub fn scan(uri) {
       uncropped
     })
   assert Ok(title) = fallback.get_og_title(document)
-  ImageReel(title: title, images: image_sources)
+  ImageReel(title: title, images: image_sources, url: uri.to_string(uri))
 }

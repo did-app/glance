@@ -7,6 +7,9 @@ import gleam/httpc
 import floki
 import glance/preview.{Page}
 
+// https://www.emergeinteractive.com/insights/detail/the-essentials-of-favicons/
+// favicon information
+
 pub fn scan(uri) {
   let Uri(path: path, host: Some(host), ..) = uri
   let request =
