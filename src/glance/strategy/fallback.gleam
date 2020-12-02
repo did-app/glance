@@ -89,7 +89,7 @@ fn get_description(document) {
         Error(Nil) ->
           case get_document_description(document) {
             Ok(description) -> description
-            Error(Nil) -> "TODO fallback description"
+            Error(Nil) -> ""
           }
       }
   }
