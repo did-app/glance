@@ -1,5 +1,6 @@
 import gleam/list
 import gleam/option.{Some}
+import gleam/result.{unwrap}
 import gleam/uri.{Uri}
 import gleam/http.{Response}
 import gleam/httpc
@@ -15,32 +16,28 @@ pub fn scan(uri) {
     |> http.set_path(path)
   assert Ok(Response(status: 200, body: html, ..)) = httpc.send(request)
   assert Ok(document) = floki.parse_document(html)
+
   Page(
-    title: get_title(document),
+    title: unwrap(get_title(document), host),
     description: get_description(document),
     image: get_image(document),
-    url: get_url(document),
+    url: unwrap(get_url(document), host),
   )
+}
+
+fn lazy_or(result, fallback) {
+  case result {
+    Ok(value) -> Ok(value)
+    Error(_) -> fallback()
+  }
 }
 
 // try is the best way of doing result based or, no works wrong way round
 fn get_title(document) {
-  case get_og_title(document) {
-    Ok(title) -> title
-    Error(Nil) ->
-      case get_twitter_title(document) {
-        Ok(title) -> title
-        Error(Nil) ->
-          case get_document_title(document) {
-            Ok(title) -> title
-            Error(Nil) ->
-              case get_header_tag_title(document) {
-                Ok(title) -> title
-                Error(Nil) -> "TODO fallback title"
-              }
-          }
-      }
-  }
+  get_og_title(document)
+  |> lazy_or(fn() { get_twitter_title(document) })
+  |> lazy_or(fn() { get_document_title(document) })
+  |> lazy_or(fn() { get_header_tag_title(document) })
 }
 
 pub fn get_og_title(document) {
@@ -69,14 +66,8 @@ fn get_header_tag_title(document) {
 }
 
 fn get_url(document) {
-  case get_og_url(document) {
-    Ok(url) -> url
-    Error(Nil) ->
-      case get_canonical_url(document) {
-        Ok(url) -> url
-        Error(Nil) -> "TODO fallback url"
-      }
-  }
+  get_og_url(document)
+  |> lazy_or(fn() { get_canonical_url(document) })
 }
 
 fn get_og_url(document) {
