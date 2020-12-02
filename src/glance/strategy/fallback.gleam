@@ -21,7 +21,7 @@ pub fn scan(uri) {
     title: unwrap(get_title(document), host),
     description: get_description(document),
     image: get_image(document),
-    url: unwrap(get_url(document), host),
+    url: unwrap(get_url(document), uri.to_string(uri)),
   )
 }
 
