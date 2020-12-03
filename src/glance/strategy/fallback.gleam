@@ -9,7 +9,6 @@ import glance/preview.{Page}
 
 // https://www.emergeinteractive.com/insights/detail/the-essentials-of-favicons/
 // favicon information
-
 pub fn scan(uri) {
   let Uri(path: path, host: Some(host), ..) = uri
   let request =
@@ -20,11 +19,17 @@ pub fn scan(uri) {
   assert Ok(Response(status: 200, body: html, ..)) = httpc.send(request)
   assert Ok(document) = floki.parse_document(html)
 
+  let url = case host {
+    // og:data on google meet doesn't include the path, this is not the correct use of og:url
+    "meet.google.com" -> uri.to_string(uri)
+    _ -> unwrap(get_url(document), uri.to_string(uri))
+  }
+
   Page(
     title: unwrap(get_title(document), host),
     description: get_description(document),
     image: get_image(document),
-    url: unwrap(get_url(document), uri.to_string(uri)),
+    url: url,
   )
 }
 
