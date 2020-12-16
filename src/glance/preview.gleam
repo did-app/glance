@@ -3,6 +3,7 @@ import gleam/json
 
 pub type Preview {
   Page(title: String, description: String, image: String, url: String)
+  Image(url: String)
   ImageReel(title: String, images: List(String), url: String)
 }
 
@@ -14,6 +15,11 @@ pub fn to_json(preview) {
         tuple("title", json.string(title)),
         tuple("description", json.string(description)),
         tuple("image", json.string(image)),
+        tuple("url", json.string(url)),
+      ])
+    Image(url) ->
+      json.object([
+        tuple("item", json.string("image")),
         tuple("url", json.string(url)),
       ])
     ImageReel(title, images, url) ->

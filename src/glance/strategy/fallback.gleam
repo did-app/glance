@@ -1,3 +1,5 @@
+import gleam/bit_string
+import gleam/io
 import gleam/list
 import gleam/option.{Some}
 import gleam/result.{unwrap}
@@ -5,7 +7,7 @@ import gleam/uri.{Uri}
 import gleam/http.{Response}
 import gleam/httpc
 import floki
-import glance/preview.{Page}
+import glance/preview.{Image, Page}
 
 // https://www.emergeinteractive.com/insights/detail/the-essentials-of-favicons/
 // favicon information
@@ -16,21 +18,31 @@ pub fn scan(uri) {
     |> http.set_method(http.Get)
     |> http.set_host(host)
     |> http.set_path(path)
-  assert Ok(Response(status: 200, body: html, ..)) = httpc.send(request)
-  assert Ok(document) = floki.parse_document(html)
-
-  let url = case host {
-    // og:data on google meet doesn't include the path, this is not the correct use of og:url
-    "meet.google.com" -> uri.to_string(uri)
-    _ -> unwrap(get_url(document), uri.to_string(uri))
+    |> http.set_req_body(<<>>)
+  assert Ok(response) = httpc.send_bits(request)
+  io.debug(response.headers)
+  case http.get_resp_header(response, "content-type") {
+    Ok("image/png") -> Image(uri.to_string(uri))
+    Ok("image/jpg") -> Image(uri.to_string(uri))
+    Ok("image/jpeg") -> Image(uri.to_string(uri))
+    _ -> {
+      assert Ok(html) = bit_string.to_string(response.body)
+      assert Ok(document) = floki.parse_document(html)
+      let url = uri.to_string(uri)
+      // TODO remove this, dont meddle
+      // = case host {
+      //   // og:data on google meet doesn't include the path, this is not the correct use of og:url
+      //   "meet.google.com" -> uri.to_string(uri)
+      //   _ -> unwrap(get_url(document), uri.to_string(uri))
+      // }
+      Page(
+        title: unwrap(get_title(document), host),
+        description: get_description(document),
+        image: get_image(document),
+        url: url,
+      )
+    }
   }
-
-  Page(
-    title: unwrap(get_title(document), host),
-    description: get_description(document),
-    image: get_image(document),
-    url: url,
-  )
 }
 
 fn lazy_or(result, fallback) {
