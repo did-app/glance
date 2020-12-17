@@ -4,6 +4,7 @@ import gleam/json
 pub type Preview {
   Page(title: String, description: String, image: String, url: String)
   Image(url: String)
+  EmbededVideo(iframe: String)
   ImageReel(title: String, images: List(String), url: String)
 }
 
@@ -21,6 +22,11 @@ pub fn to_json(preview) {
       json.object([
         tuple("item", json.string("image")),
         tuple("url", json.string(url)),
+      ])
+    EmbededVideo(iframe) ->
+      json.object([
+        tuple("item", json.string("embeded_video")),
+        tuple("iframe", json.string(iframe)),
       ])
     ImageReel(title, images, url) ->
       json.object([

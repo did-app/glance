@@ -6,6 +6,8 @@ import gleam/json
 import glance/preview
 import glance/strategy/fallback
 import glance/strategy/google_photos
+import glance/strategy/loom
+import glance/strategy/youtube
 import glance/strategy/xkcd
 
 // return surface or card or widget
@@ -17,6 +19,9 @@ pub fn scan_uri(uri) {
   case host {
     "photos.app.goo.gl" -> google_photos.scan(uri)
     "xkcd.com" | "m.xkcd.com" | "www.xkcd.com" -> xkcd.scan(uri)
+    "www.loom.com" -> loom.scan(uri)
+    "www.youtube.com" | "youtube.com" | "m.youtube.com" -> youtube.scan(uri)
+    "youtu.be" -> youtube.scan_short(uri)
     _ -> fallback.scan(uri)
   }
 }
