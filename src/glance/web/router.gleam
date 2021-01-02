@@ -41,5 +41,5 @@ pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) 
   }
   |> http.prepend_resp_header("access-control-allow-origin", "*")
   |> http.prepend_resp_header("access-control-allow-credentials", "true")
-  |> http.prepend_resp_header("access-control-allow-headers", "content-type")
+  |> http.prepend_resp_header("access-control-allow-headers", "content-type, sentry-trace")
 }

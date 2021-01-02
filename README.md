@@ -2,6 +2,8 @@
 
 Glance at a url for [plummail.co](https://plummail.co) message preview.
 
+*Caching to be implemented in clients. Closer to the user and currently usage small enough to have few user crossovers.*
+
 ## Development
 
 Run with docker.
