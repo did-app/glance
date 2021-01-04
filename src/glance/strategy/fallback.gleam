@@ -22,9 +22,8 @@ pub fn scan(uri) {
   assert Ok(response) = httpc.send_bits(request)
   io.debug(response.headers)
   case http.get_resp_header(response, "content-type") {
-    Ok("image/png") -> Image(uri.to_string(uri))
-    Ok("image/jpg") -> Image(uri.to_string(uri))
-    Ok("image/jpeg") -> Image(uri.to_string(uri))
+    Ok("image/png") | Ok("image/jpg") | Ok("image/jpeg") | Ok("image/gif") ->
+      Image(uri.to_string(uri))
     _ -> {
       assert Ok(html) = bit_string.to_string(response.body)
       assert Ok(document) = floki.parse_document(html)
