@@ -6,5 +6,3 @@
 erl_crash.dump
 *.ez
 plum_mail-*.tar
-
-src/glance/config.gleam

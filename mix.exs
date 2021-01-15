@@ -8,7 +8,7 @@ defmodule PlumMail.MixProject do
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       erlc_paths: ["src", "gen"],
-      compilers: [:gleam | Mix.compilers()],
+      compilers: [:env, :gleam | Mix.compilers()],
       deps: deps()
     ]
   end
@@ -33,7 +33,8 @@ defmodule PlumMail.MixProject do
        github: "midas-framework/floki",
        tag: "4bae91f3129fbf517aae084695db5671eb115931",
        manager: :mix,
-       override: true}
+       override: true},
+      {:env, path: "./env"}
     ]
   end
 end
