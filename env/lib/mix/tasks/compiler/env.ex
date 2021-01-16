@@ -9,6 +9,7 @@ defmodule Mix.Tasks.Compile.Env do
     #   0 -> {:ok, []}
     #   status -> exit(status)
     # end
+    IO.inspect(:code.all_loaded())
 
     # root = Application.app_dir(:glance)
     root = System.cwd()

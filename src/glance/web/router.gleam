@@ -3,6 +3,7 @@ import gleam/bit_string.{BitString}
 import gleam/io
 import gleam/list
 import gleam/option.{Some}
+import gleam/string
 import gleam/uri
 import gleam/http.{Request, Response}
 import gleam/httpc
@@ -26,8 +27,9 @@ pub fn set_resp_json(response, data) {
 pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) {
     let Ok(Env(foo, bar, baz)) = config.from_env()
     io.debug(foo)
-    io.debug(bar,)
+    io.debug(bar)
     io.debug(baz)
+    string.concat([option.unwrap(foo, ""), option.unwrap(bar, ""), baz])
   case request.method {
     http.Options ->
       http.response(200)
