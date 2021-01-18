@@ -4,7 +4,7 @@ import gleam/list
 import gleam/option.{Some}
 import gleam/result.{unwrap}
 import gleam/uri.{Uri}
-import gleam/http.{Response}
+import gleam/http
 import gleam/httpc
 import floki
 import glance/preview.{Image, Page}

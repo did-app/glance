@@ -1,0 +1,1 @@
+-record(options, {case_insensitive, multi_line}).

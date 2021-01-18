@@ -21,3 +21,7 @@ This app uses the container stack.
 ```
 heroku stack:set -a did-glance container
 ```
+
+
+gleam build-stuff providers
+escript provide env env.spec
