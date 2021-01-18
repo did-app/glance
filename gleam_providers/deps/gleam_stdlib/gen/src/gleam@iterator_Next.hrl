@@ -1,0 +1,1 @@
+-record(next, {element, accumulator}).
