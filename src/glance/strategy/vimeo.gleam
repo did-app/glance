@@ -14,6 +14,7 @@ fn preview(id) {
 pub fn scan(uri: Uri) {
   case uri.path_segments(uri.path) {
     [id, _something_im_not_sure_about] -> preview(id)
+    [id] -> preview(id)
   }
 }
 
