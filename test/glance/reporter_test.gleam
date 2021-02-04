@@ -24,6 +24,15 @@ external fn receive(Int) -> a =
 external fn erl_log(Level, String, List(Nil)) -> ErlResult =
   "logger" "log"
 
+external fn inspect() -> Dynamic =
+  "logger" "i"
+
+  // Have gleam logger
+  // Have gleam logger handler
+  // Copy the pid crashed information
+  // Have a Sentry Client basics
+  // Make sure we send a string for everything else.
+
 pub fn assert_failure_test() {
   let self = atom.create_from_string("gleam@logger")
   assert Ok = add_handler(self, self, map.from_list([]))
@@ -33,6 +42,7 @@ pub fn assert_failure_test() {
     assert Ok = Error(dynamic.from(Nil))
     Nil
   })
+  inspect()
   let x = receive(500)
   io.debug(x)
   todo("finish test")
