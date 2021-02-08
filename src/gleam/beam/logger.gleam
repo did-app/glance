@@ -1,3 +1,4 @@
+// Default setting is false for SASL compatible https://erlang.org/doc/man/kernel_app.html#logger_sasl_compatible
 import gleam/io
 
 // These are the log levels used in the erlang logger

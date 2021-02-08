@@ -2,7 +2,7 @@ import gleam/atom.{Atom}
 import gleam/dynamic.{Dynamic}
 import gleam/io
 import gleam/map.{Map}
-import gleam/logger.{Level}
+import gleam/beam/logger.{Level}
 import gleam/should
 
 pub type ErlResult {

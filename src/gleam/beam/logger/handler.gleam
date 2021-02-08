@@ -7,10 +7,10 @@ import gleam/int
 import gleam/io
 import gleam/os
 import gleam/string
+import gleam/beam
 import gleam/http
 import gleam/httpc
 import gleam/json
-import sentry/client as sentry
 
 // https://erlang.org/doc/man/logger.html#HModule:log-2
 pub fn log(event, config) {
@@ -106,13 +106,13 @@ fn handle_erl_exception(exception) {
 
 fn handle_error(reason, stacktrace) {
   let sentry_type = case dynamic.element(reason, 0) {
-    Ok(key) -> sentry.format(key)
-    _ -> sentry.format(reason)
+    Ok(key) -> beam.format(key)
+    _ -> beam.format(reason)
   }
   let value =
     dynamic.element(reason, 1)
     |> result.unwrap(dynamic.from(Nil))
-    |> sentry.format
+    |> beam.format
   let stacktrace = list.map(stacktrace, frame_from_dynamic)
 
   // https://develop.sentry.dev/sdk/event-payloads/exception/
@@ -122,48 +122,4 @@ fn handle_error(reason, stacktrace) {
     // tuple("module", "TODO first frame in stacktrace")
     tuple("stacktrace", json.list(stacktrace)),
   ])
-}
-
-fn frame_from_dynamic(frame) {
-  let module =
-    dynamic.element(frame, 0)
-    |> result.map(sentry.format)
-  let function =
-    dynamic.element(frame, 1)
-    |> result.map(sentry.format)
-  let arity =
-    dynamic.element(frame, 2)
-    |> result.then(fn(term) {
-      case dynamic.int(term) {
-        Ok(arity) -> Ok(arity)
-      }
-    })
-  assert Ok(location) =
-    dynamic.element(frame, 3)
-    |> result.then(dynamic.typed_list(_, dynamic.tuple2))
-    |> result.map(map.from_list)
-
-  let filename =
-    map.get(location, dynamic.from(atom.create_from_string("file")))
-    |> result.map_error(fn(_: Nil) { "Missing key file" })
-    // Returns a charlist
-    |> result.map(sentry.format)
-  let line_number =
-    map.get(location, dynamic.from(atom.create_from_string("line")))
-    |> result.map_error(fn(_: Nil) { "Missing key line" })
-    |> result.then(dynamic.int)
-
-  case module, function, arity, filename, line_number {
-    Ok(module), Ok(function), Ok(arity), Ok(filename), Ok(line_number) -> {
-      let function = string.join([function, int.to_string(arity)], "/")
-      json.object([
-        tuple("filename", json.string(filename)),
-        tuple("function", json.string(function)),
-        tuple("module", json.string(module)),
-        tuple("lineno", json.int(line_number)),
-      ])
-    }
-  }
-  // tuple("colno", json.string("doesn't exist"))
-  // tuple("abs_path", json.string("TODO"))
 }
