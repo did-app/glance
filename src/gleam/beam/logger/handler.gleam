@@ -11,119 +11,61 @@ import gleam/beam
 import gleam/http
 import gleam/httpc
 import gleam/json
+import gleam/beam
+import gleam/beam/logger.{Event, Report}
 
-// cast log report
-// cast log event etc
-// https://erlang.org/doc/man/logger.html#HModule:log-2
-pub fn log(event, config) {
-  let level = dynamic.field(event, atom.create_from_string("level"))
-  let meta = dynamic.field(event, atom.create_from_string("meta"))
-  let msg = dynamic.field(event, atom.create_from_string("msg"))
-
-  case level, meta, msg {
-    Ok(level), Ok(metadata), Ok(message) ->
-      handle_log_event(level, message, metadata)
-  }
-}
-
-fn handle_log_event(level, message, metadata) {
-  let report_atom = dynamic.from(atom.create_from_string("report"))
-  let message_tag = dynamic.element(message, 0)
-  let message_detail = dynamic.element(message, 1)
-
-  // timestamp is always added by logger to metadata
-  // Include system_time call as fallback
+// TODO what happens if exit normal
+fn do_log(event, config) {
+  try Event(level, metadata, message) = logger.cast_log_event(event)
+  assert Ok(handler) = map.get(config, atom.create_from_string("handler"))
   let timestamp =
-    dynamic.field(metadata, atom.create_from_string("time"))
+    map.get(metadata, atom.create_from_string("time"))
+    |> result.map_error(fn(_) { "time should be an integer" })
     |> result.then(dynamic.int)
+    // timestamp is always added by logger to metadata
+    // Include system_time call as fallback
     |> result.lazy_unwrap(fn() { os.system_time(os.Microsecond) })
 
-  case message_tag, message_detail {
-    Ok(t), Ok(message_detail) if t == report_atom ->
-      handle_report(message_detail, timestamp)
+  case message {
+    Report(report) -> {
+      try tuple(reason, stacktrace) = cast_proc_lib_report(report)
+      handler(reason, stacktrace, timestamp)
+      Ok(Nil)
+    }
+    _ -> Ok(Nil)
   }
+  Ok(Nil)
 }
 
-// Error type vs error report.
-// make gleam@beam@error
-fn handle_report(report, timestamp) {
-  // https://github.com/erlang/otp/blob/master/lib/stdlib/src/proc_lib.erl#L804
-  // this is a proc lib report with two elements
-  case dynamic.field(report, atom.create_from_string("report")) {
-    Ok(stuff) -> {
-      let Ok([report, linked]) = dynamic.list(stuff)
-      let Ok(report) = dynamic.typed_list(report, dynamic.tuple2)
-      let report = map.from_list(report)
-      let Ok(erl_exception) =
-        map.get(report, dynamic.from(atom.create_from_string("error_info")))
-      let sentry_exception = handle_erl_exception(erl_exception)
-      let event =
-        json.object([
-          // tuple("id"),
-          tuple("timestamp", json.int(timestamp)),
-          // TODO switch to production
-          tuple("environment", json.string("local")),
-          tuple("exception", sentry_exception),
-        ])
-      io.debug(event)
-      let request =
-        http.default_req()
-        |> http.set_method(http.Post)
-        |> http.set_scheme(http.Https)
-        // https://e3b301fb356a4e61bebf8edb110af5b3@o351506.ingest.sentry.io/5574979
-        |> http.set_host("app.getsentry.com")
-        |> http.set_path("/api/store")
-        |> http.set_query([
-          tuple("sentry_key", "e3b301fb356a4e61bebf8edb110af5b3"),
-        ])
-        |> http.prepend_req_header("content-type", "application/json")
-        |> http.set_req_body(json.encode(event))
-        |> http.prepend_req_header("content-encoding", "identity")
-        |> io.debug()
-        |> httpc.send()
-        |> io.debug
-      Nil
-    }
-    Error(_) -> {
-      io.debug("nope")
-      Nil
+pub fn log(event, config) {
+  assert Ok(_) = do_log(event, config)
+  Nil
+}
+
+pub fn cast_proc_lib_report(raw) {
+  try report = dynamic.field(raw, atom.create_from_string("report"))
+  try [report, _linked] = dynamic.list(report)
+  try report = dynamic.typed_list(report, dynamic.tuple2)
+  try error_info =
+    list.key_find(report, dynamic.from(atom.create_from_string("error_info")))
+    |> result.map_error(fn(_) { "Missing error_info key" })
+
+  try kind = dynamic.element(error_info, 0)
+  try kind = dynamic.atom(kind)
+
+  let error = atom.create_from_string("error")
+  // Other kinds are catch and exit. 
+  // Exit is same as error, with no stacktrace
+  // catch should be an error with no catch
+  case kind {
+    k if k == error -> {
+      try reason = dynamic.element(error_info, 1)
+      try reason = beam.cast_exit_reason(reason)
+      try stacktrace = dynamic.element(error_info, 2)
+      try stacktrace = beam.cast_stacktrace(stacktrace)
+      tuple(reason, stacktrace)
+      |> Ok
     }
   }
 }
 
-fn handle_erl_exception(exception) {
-  let kind =
-    dynamic.element(exception, 0)
-    |> result.then(dynamic.atom)
-  let reason = dynamic.element(exception, 1)
-  let stacktrace = dynamic.element(exception, 2)
-  // |> result.then(dynamic.list)
-  let error_atom = atom.create_from_string("error")
-  case kind, reason, stacktrace {
-    Ok(k), Ok(reason), Ok(stacktrace) if k == error_atom ->
-      handle_error(reason, stacktrace)
-  }
-}
-
-fn handle_error(reason, stacktrace) {
-  io.debug(beam.cast_exit_reason(reason))
-  io.debug(beam.cast_stacktrace(stacktrace))
-  // todo("foo")
-  json.object([])
-  // let sentry_type = case dynamic.element(reason, 0) {
-  //   Ok(key) -> beam.format(key)
-  //   _ -> beam.format(reason)
-  // }
-  // let value =
-  //   dynamic.element(reason, 1)
-  //   |> result.unwrap(dynamic.from(Nil))
-  //   |> beam.format
-  // let stacktrace = list.map(stacktrace, frame_from_dynamic)
-  // // https://develop.sentry.dev/sdk/event-payloads/exception/
-  // json.object([
-  //   tuple("type", json.string(sentry_type)),
-  //   tuple("value", json.string(value)),
-  //   // tuple("module", "TODO first frame in stacktrace")
-  //   tuple("stacktrace", json.list(stacktrace)),
-  // ])
-}

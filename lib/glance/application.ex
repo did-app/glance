@@ -13,7 +13,7 @@ defmodule Glance.Application do
       }
     ]
 
-    :logger.add_handler(:gleam@beam@logger@handler, :gleam@beam@logger@handler, %{level: :error})
+    :gleam@beam@logger.add_handler(&:glance@logger.handle/3)
     |> IO.inspect
     
     opts = [strategy: :one_for_one, name: PlumMail.Supervisor]

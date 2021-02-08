@@ -1,4 +1,4 @@
-import gleam/atom
+import gleam/atom.{Atom}
 import gleam/dynamic.{Dynamic}
 import gleam/int
 import gleam/io
@@ -35,6 +35,9 @@ pub type ExitReason {
   SystemLimit
 }
 
+pub type Stacktrace =
+  List(tuple(Atom, Atom, Int, String, Int))
+
 pub fn cast_exit_reason(raw) {
   let badarg = dynamic.from(atom.create_from_string("badarg"))
   let badarith = dynamic.from(atom.create_from_string("badarith"))
@@ -69,7 +72,7 @@ pub fn cast_exit_reason(raw) {
     k, Error(_) if k == noproc -> Ok(Noproc)
     k, Ok(term) if k == nocatch -> Ok(Nocatch(term))
     k, Error(_) if k == system_limit -> Ok(SystemLimit)
-    _, _ -> Error(raw)
+    _, _ -> Error("Not a runtime exit reason")
   }
 }
 
