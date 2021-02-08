@@ -12,6 +12,8 @@ import gleam/http
 import gleam/httpc
 import gleam/json
 
+// cast log report
+// cast log event etc
 // https://erlang.org/doc/man/logger.html#HModule:log-2
 pub fn log(event, config) {
   let level = dynamic.field(event, atom.create_from_string("level"))
@@ -94,9 +96,8 @@ fn handle_erl_exception(exception) {
     dynamic.element(exception, 0)
     |> result.then(dynamic.atom)
   let reason = dynamic.element(exception, 1)
-  let stacktrace =
-    dynamic.element(exception, 2)
-    |> result.then(dynamic.list)
+  let stacktrace = dynamic.element(exception, 2)
+  // |> result.then(dynamic.list)
   let error_atom = atom.create_from_string("error")
   case kind, reason, stacktrace {
     Ok(k), Ok(reason), Ok(stacktrace) if k == error_atom ->
@@ -105,21 +106,24 @@ fn handle_erl_exception(exception) {
 }
 
 fn handle_error(reason, stacktrace) {
-  let sentry_type = case dynamic.element(reason, 0) {
-    Ok(key) -> beam.format(key)
-    _ -> beam.format(reason)
-  }
-  let value =
-    dynamic.element(reason, 1)
-    |> result.unwrap(dynamic.from(Nil))
-    |> beam.format
-  let stacktrace = list.map(stacktrace, frame_from_dynamic)
-
-  // https://develop.sentry.dev/sdk/event-payloads/exception/
-  json.object([
-    tuple("type", json.string(sentry_type)),
-    tuple("value", json.string(value)),
-    // tuple("module", "TODO first frame in stacktrace")
-    tuple("stacktrace", json.list(stacktrace)),
-  ])
+  io.debug(beam.cast_exit_reason(reason))
+  io.debug(beam.cast_stacktrace(stacktrace))
+  // todo("foo")
+  json.object([])
+  // let sentry_type = case dynamic.element(reason, 0) {
+  //   Ok(key) -> beam.format(key)
+  //   _ -> beam.format(reason)
+  // }
+  // let value =
+  //   dynamic.element(reason, 1)
+  //   |> result.unwrap(dynamic.from(Nil))
+  //   |> beam.format
+  // let stacktrace = list.map(stacktrace, frame_from_dynamic)
+  // // https://develop.sentry.dev/sdk/event-payloads/exception/
+  // json.object([
+  //   tuple("type", json.string(sentry_type)),
+  //   tuple("value", json.string(value)),
+  //   // tuple("module", "TODO first frame in stacktrace")
+  //   tuple("stacktrace", json.list(stacktrace)),
+  // ])
 }

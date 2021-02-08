@@ -1,6 +1,7 @@
 import gleam/atom
 import gleam/dynamic.{Dynamic}
 import gleam/int
+import gleam/io
 import gleam/list
 import gleam/map
 import gleam/result
@@ -38,17 +39,17 @@ pub fn cast_exit_reason(raw) {
   let badarg = dynamic.from(atom.create_from_string("badarg"))
   let badarith = dynamic.from(atom.create_from_string("badarith"))
   let badmatch = dynamic.from(atom.create_from_string("badmatch"))
-  let functionclause = dynamic.from(atom.create_from_string("functionclause"))
-  let caseclause = dynamic.from(atom.create_from_string("caseclause"))
-  let ifclause = dynamic.from(atom.create_from_string("ifclause"))
-  let tryclause = dynamic.from(atom.create_from_string("tryclause"))
+  let function_clause = dynamic.from(atom.create_from_string("function_clause"))
+  let case_clause = dynamic.from(atom.create_from_string("case_clause"))
+  let if_clause = dynamic.from(atom.create_from_string("if_clause"))
+  let try_clause = dynamic.from(atom.create_from_string("try_clause"))
   let undef = dynamic.from(atom.create_from_string("undef"))
   let badfun = dynamic.from(atom.create_from_string("badfun"))
   let badarity = dynamic.from(atom.create_from_string("badarity"))
-  let timeoutvalue = dynamic.from(atom.create_from_string("timeoutvalue"))
+  let timeout_value = dynamic.from(atom.create_from_string("timeout_value"))
   let noproc = dynamic.from(atom.create_from_string("noproc"))
   let nocatch = dynamic.from(atom.create_from_string("nocatch"))
-  let systemlimit = dynamic.from(atom.create_from_string("systemlimit"))
+  let system_limit = dynamic.from(atom.create_from_string("system_limit"))
 
   let key =
     dynamic.element(raw, 0)
@@ -57,17 +58,17 @@ pub fn cast_exit_reason(raw) {
     k, Error(_) if k == badarg -> Ok(Badarg)
     k, Error(_) if k == badarith -> Ok(Badarith)
     k, Ok(term) if k == badmatch -> Ok(Badmatch(term))
-    k, Error(_) if k == functionclause -> Ok(FunctionClause)
-    k, Ok(term) if k == caseclause -> Ok(CaseClause(term))
-    k, Error(_) if k == ifclause -> Ok(IfClause)
-    k, Ok(term) if k == tryclause -> Ok(TryClause(term))
+    k, Error(_) if k == function_clause -> Ok(FunctionClause)
+    k, Ok(term) if k == case_clause -> Ok(CaseClause(term))
+    k, Error(_) if k == if_clause -> Ok(IfClause)
+    k, Ok(term) if k == try_clause -> Ok(TryClause(term))
     k, Error(_) if k == undef -> Ok(Undef)
     k, Ok(term) if k == badfun -> Ok(Badfun(term))
     k, Ok(term) if k == badarity -> Ok(Badarity(term))
-    k, Error(_) if k == timeoutvalue -> Ok(TimeoutValue)
+    k, Error(_) if k == timeout_value -> Ok(TimeoutValue)
     k, Error(_) if k == noproc -> Ok(Noproc)
     k, Ok(term) if k == nocatch -> Ok(Nocatch(term))
-    k, Error(_) if k == systemlimit -> Ok(SystemLimit)
+    k, Error(_) if k == system_limit -> Ok(SystemLimit)
     _, _ -> Error(raw)
   }
 }
@@ -77,47 +78,43 @@ pub fn cast_stacktrace(raw) {
   list.try_map(raw_frames, cast_stack_frame)
 }
 
-fn cast_stack_frame(frame) {
-  let module =
-    dynamic.element(frame, 0)
-    |> result.map(format)
-  let function =
-    dynamic.element(frame, 1)
-    |> result.map(format)
-  let arity =
-    dynamic.element(frame, 2)
-    |> result.then(fn(term) {
-      case dynamic.int(term) {
-        Ok(arity) -> Ok(arity)
-      }
-    })
-  assert Ok(location) =
-    dynamic.element(frame, 3)
+// https://github.com/elixir-lang/elixir/blob/76d245b6081c53228bf99fc1494add5de7872065/lib/elixir/lib/exception.ex#L28
+// stacktrace is module, function (atom or charlist), args_or_arity, location(keyword list)
+fn cast_stack_frame(raw) {
+  try module =
+    dynamic.element(raw, 0)
+    |> result.then(dynamic.atom)
+
+  try function_raw = dynamic.element(raw, 1)
+  let function = case dynamic.atom(function_raw) {
+    Ok(function) -> atom.to_string(function)
+    Error(_) -> charlist.to_string(dynamic.unsafe_coerce(function_raw))
+  }
+
+  try arity_raw = dynamic.element(raw, 2)
+  let arity = case dynamic.int(arity_raw) {
+    Ok(arity) -> arity
+    Error(_) -> list.length(dynamic.unsafe_coerce(arity_raw))
+  }
+
+  try location =
+    dynamic.element(raw, 3)
     |> result.then(dynamic.typed_list(_, dynamic.tuple2))
     |> result.map(map.from_list)
 
-  let filename =
-    map.get(location, dynamic.from(atom.create_from_string("file")))
-    |> result.map_error(fn(_: Nil) { "Missing key file" })
-    // Returns a charlist
-    |> result.map(format)
-  let line_number =
-    map.get(location, dynamic.from(atom.create_from_string("line")))
-    |> result.map_error(fn(_: Nil) { "Missing key line" })
+  let file_atom = dynamic.from(atom.create_from_string("file"))
+  let line_atom = dynamic.from(atom.create_from_string("line"))
+
+  try filename =
+    map.get(location, file_atom)
+    |> result.map_error(fn(_: Nil) { "Missing key 'file'" })
+
+  let filename = charlist.to_string(dynamic.unsafe_coerce(filename))
+
+  try line_number =
+    map.get(location, line_atom)
+    |> result.map_error(fn(_: Nil) { "Missing key 'line'" })
     |> result.then(dynamic.int)
 
-  case module, function, arity, filename, line_number {
-    Ok(module), Ok(function), Ok(arity), Ok(filename), Ok(line_number) -> {
-      let function = string.join([function, int.to_string(arity)], "/")
-      // json.object([
-      //   tuple("filename", json.string(filename)),
-      //   tuple("function", json.string(function)),
-      //   tuple("module", json.string(module)),
-      //   tuple("lineno", json.int(line_number)),
-      // ])
-      todo("output")
-    }
-  }
-  // tuple("colno", json.string("doesn't exist"))
-  // tuple("abs_path", json.string("TODO"))
+  Ok(tuple(module, function, arity, filename, line_number))
 }
