@@ -101,7 +101,10 @@ pub fn add_handler(handler: fn(ExitReason, Stacktrace, Int) -> Nil) -> Nil {
   let config =
     map.from_list([
       tuple(atom.create_from_string("handler"), dynamic.from(handler)),
-      tuple(atom.create_from_string("level"), dynamic.from(atom.create_from_string("error")))
+      tuple(
+        atom.create_from_string("level"),
+        dynamic.from(atom.create_from_string("error")),
+      ),
     ])
   erl_add_handler(handler_module, handler_module, config)
   |> io.debug

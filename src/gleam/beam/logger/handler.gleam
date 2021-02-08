@@ -25,6 +25,8 @@ fn do_log(event, config) {
     // timestamp is always added by logger to metadata
     // Include system_time call as fallback
     |> result.lazy_unwrap(fn() { os.system_time(os.Microsecond) })
+  
+  let timestamp = timestamp / 1000000
 
   case message {
     Report(report) -> {
@@ -68,4 +70,3 @@ pub fn cast_proc_lib_report(raw) {
     }
   }
 }
-

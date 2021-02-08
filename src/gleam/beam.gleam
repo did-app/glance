@@ -36,7 +36,7 @@ pub type ExitReason {
 }
 
 pub type Stacktrace =
-  List(tuple(Atom, Atom, Int, String, Int))
+  List(tuple(Atom, String, Int, String, Int))
 
 pub fn cast_exit_reason(raw) {
   let badarg = dynamic.from(atom.create_from_string("badarg"))
@@ -76,7 +76,7 @@ pub fn cast_exit_reason(raw) {
   }
 }
 
-pub fn cast_stacktrace(raw) {
+pub fn cast_stacktrace(raw) -> Result(Stacktrace, String) {
   try raw_frames = dynamic.list(raw)
   list.try_map(raw_frames, cast_stack_frame)
 }
