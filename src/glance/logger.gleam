@@ -8,13 +8,11 @@ import gleam/option.{Some}
 import gleam/string
 import gleam/beam.{ExitReason, Stacktrace}
 import gleam_sentry as sentry
+import glance/config.{Config}
 
-pub fn handle(reason: ExitReason, stacktrace: Stacktrace, timestamp) {
-  let dsn =
-    "https://e3b301fb356a4e61bebf8edb110af5b3@o351506.ingest.sentry.io/5574979"
-  assert Ok(client) = sentry.init(dsn, "local")
+pub fn handle(config: Config, reason: ExitReason, stacktrace: Stacktrace, timestamp) {
   assert Ok(response) =
-    sentry.capture_exception(client, reason, stacktrace, timestamp)
+    sentry.capture_exception(config.sentry_client, reason, stacktrace, timestamp)
   response.headers
   |> io.debug
   response.status
