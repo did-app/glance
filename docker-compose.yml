@@ -19,3 +19,5 @@ services:
     network_mode: host
     environment:
       PORT: 9000
+      ENVIRONMENT: local
+      SENTRY_DSN: https://e3b301fb356a4e61bebf8edb110af5b3@o351506.ingest.sentry.io/5574979

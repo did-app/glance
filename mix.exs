@@ -24,11 +24,13 @@ defmodule PlumMail.MixProject do
   defp deps do
     [
       {:mix_gleam, "~> 0.1.0"},
-      {:gleam_stdlib, "~> 0.12.0", override: true},
+      {:gleam_stdlib, "~> 0.13.0", override: true},
+      {:gleam_beam, "~> 0.1.0"},
       {:gleam_cowboy, "~> 0.1.2"},
-      {:gleam_http, "~> 1.6"},
-      {:gleam_httpc, "~> 0.1.1"},
+      {:gleam_http, "~> 1.6", override: true},
+      {:gleam_httpc, "~> 1.0"},
       {:gleam_json, "~> 0.1.0"},
+      {:gleam_sentry, "~> 0.1.0"},
       {:floki,
        github: "midas-framework/floki",
        tag: "4bae91f3129fbf517aae084695db5671eb115931",

@@ -13,6 +13,9 @@ defmodule Glance.Application do
       }
     ]
 
+    config = :glance@config.from_env()
+    nil = :gleam@beam@logger.add_handler(&:glance@logger.handle(config, &1, &2, &3))
+    
     opts = [strategy: :one_for_one, name: PlumMail.Supervisor]
     Supervisor.start_link(children, opts)
   end

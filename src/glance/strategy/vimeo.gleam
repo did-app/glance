@@ -17,4 +17,3 @@ pub fn scan(uri: Uri) {
     [id] -> preview(id)
   }
 }
-
