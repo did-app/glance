@@ -7,7 +7,7 @@ import gleam/list
 import gleam/option.{Some}
 import gleam/string
 import gleam/beam.{ExitReason, Stacktrace}
-import sentry
+import gleam_sentry as sentry
 
 pub fn handle(reason: ExitReason, stacktrace: Stacktrace, timestamp) {
   let dsn =
