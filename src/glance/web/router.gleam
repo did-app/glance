@@ -6,7 +6,6 @@ import gleam/option.{Some}
 import gleam/uri
 import gleam/http.{Request, Response}
 import gleam/httpc
-import gleam/atom
 import gleam/json
 import floki
 import glance
@@ -23,17 +22,7 @@ pub fn set_resp_json(response, data) {
   |> http.set_resp_body(body)
 }
 
-external fn do_exit(x) -> Nil =
-  "erlang" "exit"
-
 pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) {
-  1 / 0
-  case 5 {
-    2 -> Nil
-  }
-  io.debug(1 / 0)
-  let 1 = 2
-  // do_exit(atom.create_from_string("normal"))
   case request.method {
     http.Options ->
       http.response(200)
