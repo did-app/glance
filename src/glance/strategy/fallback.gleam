@@ -28,6 +28,7 @@ pub fn scan(uri) {
       assert Ok(html) = bit_string.to_string(response.body)
       assert Ok(document) = floki.parse_document(html)
       let url = uri.to_string(uri)
+      io.debug(uri)
       // TODO remove this, dont meddle
       // = case host {
       //   // og:data on google meet doesn't include the path, this is not the correct use of og:url
@@ -37,7 +38,7 @@ pub fn scan(uri) {
       Page(
         title: unwrap(get_title(document), host),
         description: get_description(document),
-        image: get_image(document),
+        image: get_image(document, uri),
         url: url,
       )
     }
@@ -133,9 +134,14 @@ fn get_document_description(document) {
   }
 }
 
-fn get_image(document) {
+fn get_image(document, base) {
   case get_og_image(document) {
-    Ok(image) -> image
+    Ok(image) ->  case uri.parse(image) {
+      Ok(relative) -> {
+      assert Ok(absolute) =  uri.merge(base, relative) 
+      uri.to_string(absolute)
+      }
+    }
     Error(Nil) -> "TODO fallback image"
   }
 }
