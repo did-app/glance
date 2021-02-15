@@ -1,4 +1,4 @@
-import gleam/bit_string
+import gleam/bit_string.{BitString}
 import gleam/io
 import gleam/list
 import gleam/option.{Some}
@@ -9,6 +9,9 @@ import gleam/httpc
 import floki
 import glance/preview.{Image, Page}
 
+external fn unzip(BitString) -> BitString =
+  "zlib" "gunzip"
+
 // https://www.emergeinteractive.com/insights/detail/the-essentials-of-favicons/
 // favicon information
 pub fn scan(uri) {
@@ -18,17 +21,25 @@ pub fn scan(uri) {
     |> http.set_method(http.Get)
     |> http.set_host(host)
     |> http.set_path(path)
+    |> http.prepend_req_header("accept-encoding", "identity")
     |> http.set_req_body(<<>>)
   assert Ok(response) = httpc.send_bits(request)
-  io.debug(response.headers)
   case http.get_resp_header(response, "content-type") {
     Ok("image/png") | Ok("image/jpg") | Ok("image/jpeg") | Ok("image/gif") ->
       Image(uri.to_string(uri))
     _ -> {
-      assert Ok(html) = bit_string.to_string(response.body)
+      let html = case http.get_resp_header(response, "content-encoding") {
+        Ok("gzip") -> {
+          assert Ok(html) = bit_string.to_string(unzip(response.body))
+          html
+        }
+        _ -> {
+          assert Ok(html) = bit_string.to_string(response.body)
+          html
+        }
+      }
       assert Ok(document) = floki.parse_document(html)
       let url = uri.to_string(uri)
-      io.debug(uri)
       // TODO remove this, dont meddle
       // = case host {
       //   // og:data on google meet doesn't include the path, this is not the correct use of og:url
