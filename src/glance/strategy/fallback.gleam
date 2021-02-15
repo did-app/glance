@@ -78,7 +78,7 @@ fn get_document_title(document) {
   }
 }
 
-fn get_header_tag_title(document) {
+pub fn get_header_tag_title(document) {
   let h1_tags = floki.find(document, "h1")
   case list.head(h1_tags) {
     Ok(header_tag) -> Ok(floki.text([header_tag]))
@@ -136,12 +136,13 @@ fn get_document_description(document) {
 
 fn get_image(document, base) {
   case get_og_image(document) {
-    Ok(image) ->  case uri.parse(image) {
-      Ok(relative) -> {
-      assert Ok(absolute) =  uri.merge(base, relative) 
-      uri.to_string(absolute)
+    Ok(image) ->
+      case uri.parse(image) {
+        Ok(relative) -> {
+          assert Ok(absolute) = uri.merge(base, relative)
+          uri.to_string(absolute)
+        }
       }
-    }
     Error(Nil) -> "TODO fallback image"
   }
 }

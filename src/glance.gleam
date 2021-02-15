@@ -5,6 +5,7 @@ import gleam/uri.{Uri}
 import gleam/json
 import glance/preview
 import glance/strategy/fallback
+import glance/strategy/drive_uploader
 import glance/strategy/google_photos
 import glance/strategy/loom
 import glance/strategy/vimeo
@@ -18,6 +19,7 @@ pub fn scan_uri(uri) {
   let Uri(scheme: scheme, host: Some(host), path: path, query: query, ..) = uri
 
   case host {
+    "driveuploader.com" -> drive_uploader.scan(uri)
     "photos.app.goo.gl" -> google_photos.scan(uri)
     "xkcd.com" | "m.xkcd.com" | "www.xkcd.com" -> xkcd.scan(uri)
     "www.loom.com" -> loom.scan(uri)
