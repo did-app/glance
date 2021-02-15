@@ -10,9 +10,19 @@ import gleam/beam.{ExitReason, Stacktrace}
 import gleam_sentry as sentry
 import glance/config.{Config}
 
-pub fn handle(config: Config, reason: ExitReason, stacktrace: Stacktrace, timestamp) {
+pub fn handle(
+  config: Config,
+  reason: ExitReason,
+  stacktrace: Stacktrace,
+  timestamp,
+) {
   assert Ok(response) =
-    sentry.capture_exception(config.sentry_client, reason, stacktrace, timestamp)
+    sentry.capture_exception(
+      config.sentry_client,
+      reason,
+      stacktrace,
+      timestamp,
+    )
   response.headers
   |> io.debug
   response.status
