@@ -7,6 +7,7 @@ import glance/preview
 import glance/strategy/fallback
 import glance/strategy/drive_uploader
 import glance/strategy/google_photos
+import glance/strategy/google_scripts
 import glance/strategy/loom
 import glance/strategy/vimeo
 import glance/strategy/youtube
@@ -21,6 +22,7 @@ pub fn scan_uri(uri) {
   case host {
     "driveuploader.com" -> drive_uploader.scan(uri)
     "photos.app.goo.gl" -> google_photos.scan(uri)
+    "script.google.com" -> google_scripts.scan(uri)
     "xkcd.com" | "m.xkcd.com" | "www.xkcd.com" -> xkcd.scan(uri)
     "www.loom.com" -> loom.scan(uri)
     "www.vimeo.com" | "vimeo.com" -> vimeo.scan(uri)

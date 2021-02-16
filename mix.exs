@@ -27,6 +27,7 @@ defmodule PlumMail.MixProject do
       {:gleam_stdlib, "~> 0.13.0", override: true},
       {:gleam_beam, "~> 0.1.0"},
       {:gleam_cowboy, "~> 0.1.2"},
+      {:gleam_crypto, "~> 0.2"},
       {:gleam_http, "~> 1.6", override: true},
       {:gleam_httpc, "~> 1.0"},
       {:gleam_json, "~> 0.1.0"},
