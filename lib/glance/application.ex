@@ -9,7 +9,7 @@ defmodule Glance.Application do
     children = [
       %{
         id: :cowboy,
-        start: {:gleam@http@cowboy, :start, [&:glance@web@router.handle(&1, nil), port]}
+        start: {:glance@web@endpoint, :start, [port]}
       }
     ]
 

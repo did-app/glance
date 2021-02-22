@@ -24,11 +24,11 @@ defmodule PlumMail.MixProject do
   defp deps do
     [
       {:mix_gleam, "~> 0.1.0"},
-      {:gleam_stdlib, "~> 0.13.0", override: true},
+      {:gleam_stdlib, "~> 0.14.0", override: true},
       {:gleam_beam, "~> 0.1.0"},
-      {:gleam_cowboy, "~> 0.1.2"},
+      {:gleam_cowboy, "~> 0.2.2"},
       {:gleam_crypto, "~> 0.2"},
-      {:gleam_http, "~> 1.6", override: true},
+      {:gleam_http, "~> 2.0", override: true},
       {:gleam_httpc, "~> 1.0"},
       {:gleam_json, "~> 0.1.0"},
       {:gleam_sentry, "~> 0.1.0"},
