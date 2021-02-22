@@ -4,7 +4,7 @@ import gleam/io
 import gleam/list
 import gleam/option.{Some}
 import gleam/uri
-import gleam/http.{Request, Response}
+import gleam/http.{Get, Options, Request, Response}
 import gleam/httpc
 import gleam/json
 import floki
@@ -23,11 +23,12 @@ pub fn set_resp_json(response, data) {
 }
 
 pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) {
-  case request.method {
-    http.Options ->
+  io.debug(request)
+  case request.method, http.path_segments(request) {
+    Options, [] ->
       http.response(200)
       |> http.set_resp_body(bit_builder.from_bit_string(<<>>))
-    _ ->
+    Get, [] ->
       case request.query {
         Some(target) -> {
           assert Ok(uri) = uri.parse(target)
@@ -38,6 +39,9 @@ pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) 
           ]))
         }
       }
+    _, _ ->
+      http.response(404)
+      |> http.set_resp_body(bit_builder.from_bit_string(<<>>))
   }
   |> http.prepend_resp_header("access-control-allow-origin", "*")
   |> http.prepend_resp_header("access-control-allow-credentials", "true")
