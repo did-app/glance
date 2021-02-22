@@ -2,7 +2,7 @@ import gleam/bit_builder.{BitBuilder}
 import gleam/bit_string.{BitString}
 import gleam/io
 import gleam/list
-import gleam/option.{Some}
+import gleam/option.{None, Some}
 import gleam/uri
 import gleam/http.{Get, Options, Request, Response}
 import gleam/httpc
@@ -23,25 +23,13 @@ pub fn set_resp_json(response, data) {
 }
 
 pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) {
-  io.debug(request)
-  case request.method, http.path_segments(request) {
-    Options, [] ->
-      http.response(200)
-      |> http.set_resp_body(bit_builder.from_bit_string(<<>>))
-    Get, [] ->
-      case request.query {
-        Some(target) -> {
-          assert Ok(uri) = uri.parse(target)
-          let preview = glance.scan_uri(uri)
-          http.response(200)
-          |> set_resp_json(json.object([
-            tuple("preview", glance.preview_to_json(preview)),
-          ]))
-        }
-      }
-    _, _ ->
-      http.response(404)
-      |> http.set_resp_body(bit_builder.from_bit_string(<<>>))
+  case route(request, config) {
+    Ok(response) -> response
+    Error(BadCall(detail)) ->
+      http.response(400)
+      |> http.set_resp_body(bit_builder.from_bit_string(bit_string.from_string(
+        detail,
+      )))
   }
   |> http.prepend_resp_header("access-control-allow-origin", "*")
   |> http.prepend_resp_header("access-control-allow-credentials", "true")
@@ -49,4 +37,41 @@ pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) 
     "access-control-allow-headers",
     "content-type, sentry-trace",
   )
+}
+
+fn route(request: Request(BitString), config: Nil) {
+  case request.method, http.path_segments(request) {
+    Options, [] ->
+      http.response(200)
+      |> http.set_resp_body(bit_builder.from_bit_string(<<>>))
+      |> Ok()
+
+    Get, [] -> {
+      try target = fetch_query(request)
+      assert Ok(uri) = uri.parse(target)
+      let preview = glance.scan_uri(uri)
+      http.response(200)
+      |> set_resp_json(json.object([
+        tuple("preview", glance.preview_to_json(preview)),
+      ]))
+      |> Ok()
+    }
+
+    _, _ ->
+      http.response(404)
+      |> http.set_resp_body(bit_builder.from_bit_string(<<>>))
+      |> Ok()
+  }
+}
+
+fn fetch_query(request) {
+  let Request(query: query, ..) = request
+  case query {
+    Some(target) -> Ok(target)
+    None -> Error(BadCall("Request must have a query parameter"))
+  }
+}
+
+type Terminate {
+  BadCall(details: String)
 }
