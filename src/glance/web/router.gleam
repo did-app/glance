@@ -3,12 +3,13 @@ import gleam/bit_string.{BitString}
 import gleam/io
 import gleam/list
 import gleam/option.{None, Some}
+import gleam/result
 import gleam/uri
 import gleam/http.{Get, Options, Request, Response}
 import gleam/httpc
 import gleam/json
 import floki
-import glance
+import glance.{BadCall}
 
 pub fn set_resp_json(response, data) {
   let body =
@@ -48,8 +49,12 @@ fn route(request: Request(BitString), config: Nil) {
 
     Get, [] -> {
       try target = fetch_query(request)
-      assert Ok(uri) = uri.parse(target)
-      let preview = glance.scan_uri(uri)
+      try uri =
+        uri.parse(target)
+        |> result.map_error(fn(_) {
+          BadCall("Query parameter must be a valid url")
+        })
+      try preview = glance.scan_uri(uri)
       http.response(200)
       |> set_resp_json(json.object([
         tuple("preview", glance.preview_to_json(preview)),
@@ -70,8 +75,4 @@ fn fetch_query(request) {
     Some(target) -> Ok(target)
     None -> Error(BadCall("Request must have a query parameter"))
   }
-}
-
-type Terminate {
-  BadCall(details: String)
 }

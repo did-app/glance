@@ -13,22 +13,29 @@ import glance/strategy/vimeo
 import glance/strategy/youtube
 import glance/strategy/xkcd
 
+pub type Failure {
+  BadCall(details: String)
+}
+
 // return surface or card or widget
 // verb scan and verb preview fill same roll
 // what about preview.from_url
 pub fn scan_uri(uri) {
-  let Uri(scheme: scheme, host: Some(host), path: path, query: query, ..) = uri
-
-  case host {
-    "driveuploader.com" -> drive_uploader.scan(uri)
-    "photos.app.goo.gl" -> google_photos.scan(uri)
-    "script.google.com" -> google_scripts.scan(uri)
-    "xkcd.com" | "m.xkcd.com" | "www.xkcd.com" -> xkcd.scan(uri)
-    "www.loom.com" -> loom.scan(uri)
-    "www.vimeo.com" | "vimeo.com" -> vimeo.scan(uri)
-    "www.youtube.com" | "youtube.com" | "m.youtube.com" -> youtube.scan(uri)
-    "youtu.be" -> youtube.scan_short(uri)
-    _ -> fallback.scan(uri)
+  case uri {
+    Uri(scheme: scheme, host: Some(host), path: path, query: query, ..) ->
+      case host {
+        "driveuploader.com" -> drive_uploader.scan(uri)
+        "photos.app.goo.gl" -> google_photos.scan(uri)
+        "script.google.com" -> google_scripts.scan(uri)
+        "xkcd.com" | "m.xkcd.com" | "www.xkcd.com" -> xkcd.scan(uri)
+        "www.loom.com" -> loom.scan(uri)
+        "www.vimeo.com" | "vimeo.com" -> vimeo.scan(uri)
+        "www.youtube.com" | "youtube.com" | "m.youtube.com" -> youtube.scan(uri)
+        "youtu.be" -> youtube.scan_short(uri)
+        _ -> fallback.scan(uri)
+      }
+      |> Ok()
+    _ -> Error(BadCall("Scanned url must include a host"))
   }
 }
 
