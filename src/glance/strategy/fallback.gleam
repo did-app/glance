@@ -22,6 +22,9 @@ pub fn scan(uri) {
     |> http.set_host(host)
     |> http.set_path(path)
     |> http.prepend_req_header("accept-encoding", "identity")
+    // Certain services return 403 without user-agent, 
+    // e.g. https://plugable.com/ and https://www.diymachines.co.uk 
+    |> http.prepend_req_header("user-agent", "glance/0.1.0")
     |> http.set_req_body(<<>>)
   assert Ok(response) = httpc.send_bits(request)
   case http.get_resp_header(response, "content-type") {

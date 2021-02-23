@@ -20,12 +20,12 @@ pub fn handle(
 ) {
   case beam.cast_exit_reason(reason) {
     Ok(reason) -> {
-        sentry.capture_exception(
-          config.sentry_client,
-          reason,
-          stacktrace,
-          timestamp,
-        )
+      sentry.capture_exception(
+        config.sentry_client,
+        reason,
+        stacktrace,
+        timestamp,
+      )
       Nil
     }
     _ ->
@@ -34,7 +34,8 @@ pub fn handle(
           let sentry.Client(environment: environment, ..) = config.sentry_client
           let tuple(location, sentry_type, value) = case reason {
             beam.Todo(location, message) -> tuple(location, "todo", message)
-            beam.AssertNotMatched(location, value) -> tuple(location, 
+            beam.AssertNotMatched(location, value) -> tuple(
+              location,
               "assert not matched",
               beam.format(value),
             )
@@ -54,7 +55,7 @@ pub fn handle(
               tuple("exception", exception),
               tuple("platform", json.string("gleam")),
             ])
-            sentry.capture_event(config.sentry_client, event, timestamp)
+          sentry.capture_event(config.sentry_client, event, timestamp)
           Nil
         }
         _ -> Nil
