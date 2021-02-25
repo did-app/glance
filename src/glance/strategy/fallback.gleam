@@ -30,6 +30,7 @@ pub fn scan(uri) {
   case http.get_resp_header(response, "content-type") {
     Ok("image/png") | Ok("image/jpg") | Ok("image/jpeg") | Ok("image/gif") ->
       Image(uri.to_string(uri))
+    Ok("text/csv") -> todo("Parsing CSV, requires Nif or choosing CSV lib ")
     _ -> {
       let html = case http.get_resp_header(response, "content-encoding") {
         Ok("gzip") -> {
