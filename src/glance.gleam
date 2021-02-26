@@ -6,6 +6,7 @@ import gleam/json
 import glance/preview
 import glance/strategy/fallback
 import glance/strategy/drive_uploader
+import glance/strategy/google_docs
 import glance/strategy/google_photos
 import glance/strategy/google_scripts
 import glance/strategy/heroku_data
@@ -26,6 +27,7 @@ pub fn scan_uri(uri) {
     Uri(scheme: scheme, host: Some(host), path: path, query: query, ..) ->
       case host {
         "driveuploader.com" -> drive_uploader.scan(uri)
+        "docs.google.com" -> google_docs.scan(uri)
         "photos.app.goo.gl" -> google_photos.scan(uri)
         "script.google.com" -> google_scripts.scan(uri)
         "data.heroku.com" -> heroku_data.scan(uri)
