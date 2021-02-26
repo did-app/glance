@@ -38,11 +38,16 @@ pub fn scan(uri: Uri) {
               assert Ok(rows) =
                 dynamic.typed_list(
                   rows,
-                  dynamic.typed_list(_, fn(x: Dynamic) -> Result(Json, String) { Ok(dynamic.unsafe_coerce(x))}),
+                  dynamic.typed_list(
+                    _,
+                    fn(x: Dynamic) -> Result(Json, String) {
+                      Ok(dynamic.unsafe_coerce(x))
+                    },
+                  ),
                 )
-                // could be named columns
-                assert Ok(fields) = dynamic.field(data, "fields")
-                assert Ok(fields) = dynamic.typed_list(fields, dynamic.string)
+              // could be named columns
+              assert Ok(fields) = dynamic.field(data, "fields")
+              assert Ok(fields) = dynamic.typed_list(fields, dynamic.string)
               Table(title, fields, rows)
             }
           }

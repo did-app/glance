@@ -7,14 +7,25 @@ import gleam/uri.{Uri}
 import gleam/http.{Response}
 import gleam/httpc
 import floki
-import glance/preview.{Image, Page}
+import oembed
+import glance/preview.{EmbededHtml, Image, Page}
 
 external fn unzip(BitString) -> BitString =
   "zlib" "gunzip"
 
+pub fn scan(uri) {
+  case oembed.match(uri) {
+    Ok(endpoint) ->
+      case oembed.fetch(endpoint, uri) {
+        Ok(oembed.Rich(html, width, height)) -> EmbededHtml(html, width, height)
+      }
+    Error(_) -> scan_og(uri)
+  }
+}
+
 // https://www.emergeinteractive.com/insights/detail/the-essentials-of-favicons/
 // favicon information
-pub fn scan(uri) {
+pub fn scan_og(uri) {
   let Uri(path: path, host: Some(host), ..) = uri
   let request =
     http.default_req()
