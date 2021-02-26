@@ -15,9 +15,21 @@ pub fn match(uri) {
   let segments = uri.path_segments(path)
 
   // match against schemes
-  let provider = case host, segments {
-    "twitter.com", [_, "status", _] -> tuple("publish.twitter.com", "/oembed")
+  try provider = case host, segments {
+    "twitter.com", [_, "status", _] ->
+      Ok(tuple("publish.twitter.com", "/oembed"))
+    "mobile.twitter.com", [_, "status", _] ->
+      Ok(tuple("publish.twitter.com", "/oembed"))
+    "www.twitter.com", [_, "status", _] ->
+      Ok(tuple("publish.twitter.com", "/oembed"))
+    "reddit.com", ["r", _, "comments", _, _] ->
+      Ok(tuple("www.reddit.com", "/oembed"))
+    "www.reddit.com", ["r", _, "comments", _, _] ->
+      Ok(tuple("www.reddit.com", "/oembed"))
+
+    _, _ -> Error(Nil)
   }
+
   provider
   |> Ok
 }
@@ -42,7 +54,8 @@ pub type Resouce {
   Photo
   Video
   Link
-  Rich(html: String, width: Option(Int), height: Option(Int))
+  // Rich(html: String, width: Option(Int), height: Option(Int))
+  Rich(html: String)
 }
 
 fn decode_resource(raw) {
@@ -71,10 +84,10 @@ fn decode_link_resource(raw) {
 fn decode_rich_resource(raw) {
   try html = dynamic.field(raw, "html")
   try html = dynamic.string(html)
-  try width = dynamic.field(raw, "width")
-  try width = dynamic.option(width, dynamic.int)
-  try height = dynamic.field(raw, "height")
-  try height = dynamic.option(height, dynamic.int)
-  Rich(html, width, height)
+
+  // height and width very much not reliable as fields
+  // let width = dynamic.field(raw, "width")
+  // try result.then(width, dynamic.option(_, dynamic.int))
+  Rich(html)
   |> Ok
 }

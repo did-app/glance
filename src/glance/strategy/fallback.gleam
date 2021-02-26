@@ -17,7 +17,7 @@ pub fn scan(uri) {
   case oembed.match(uri) {
     Ok(endpoint) ->
       case oembed.fetch(endpoint, uri) {
-        Ok(oembed.Rich(html, width, height)) -> EmbededHtml(html, width, height)
+        Ok(oembed.Rich(html)) -> EmbededHtml(html)
       }
     Error(_) -> scan_og(uri)
   }
