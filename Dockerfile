@@ -1,4 +1,4 @@
-FROM ghcr.io/gleam-lang/gleam:v0.14.0-elixir
+FROM ghcr.io/gleam-lang/gleam:v0.14.2-elixir
 
 # NOTE these two should not be needed if using the midas container
 WORKDIR /opt/app

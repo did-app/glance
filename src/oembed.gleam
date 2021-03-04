@@ -1,6 +1,7 @@
 // Handle defined https://oembed.com/
 // Providers listed here https://oembed.com/providers.json
 // More advanced oembed services exist at https://embed.ly/
+// https://github.com/leedo/noembed
 import gleam/dynamic
 import gleam/io
 import gleam/option.{Option}
