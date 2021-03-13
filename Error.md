@@ -1,43 +1,97 @@
-# Error
-## Sorry Appologies
-
-- There are a fine set of error kinds
-- with the correct axes all error can be usefully represented.
 
 
-A program runs functions, has inputs, uses services wether CLI, FAAS, Server, embedded
-A type system might still leave invalid call values 1/0 being a classic example.
 
-Go error as your domain
+https://jsonapi.org/format/#errors
+id -> context -> tracing_id
+code -> 
+title -> summary, grouping key
+detail -> human readable version
 
-This is not about reducing to the smallest set of possible errors, but having a small set that is common
+pgo
+http
+request
 
-- Assertion Breakdown
-  - Something assumed never to occur did.
-
-- BadCall
-  - 400 / Bad Request
-  - A caller violated a condition that was known about from API
-  - Badarg
-- Declined Stopped UnProcessable
-  - 422 
-  - A caller violated a condition that it could not know from the API.
-    - username unavailable
-- NoLongerTrue Gone Expired 410
-  - Special case of 422
-  - A time has passed that now forbids this operation 
-  - Even if the client/caller holds an expiry time they could not have access to a clock, latency might be high, clock skew
-- Authentication Required
-  - Special case of Bad Call Bad Invokation as API will define authentication value as required
-- Forbidden unauthorized special case of 422
-
-- Service unavailable
-- Rate limited special case of service unavailable
-
-
-Properties
-- Retryable
-- Knowable
-
+In typed language only
 
 Acl
+CastFailure
+NotProvided
+
+
+Header 'foo' was not present
+<!-- Fails validation -->
+Header 'foo' is not a valid email address
+
+Have module my_app/service/db
+Have module my_app/service/http_client
+
+In sql db connection allowed failure invalid syntax developer error
+
+
+
+
+```rust
+service/pgo
+
+try = pgo.run(sql, args, mapper)
+// ,leaves single error type
+
+// vs, second approach allows handling of failed casting.
+try rows = pgo.run(sql, args)
+assert users = list.map(rows, row_to_user)
+assert [user] = users
+
+```
+
+```rust
+import perimeter/http_request/headers
+import perimeter/keyed_list is headers
+
+result.all6(
+  required(request, 'Foo', as_string)
+  optional()
+  User()
+)
+
+// Doesn't work as ok(none) looses error info
+result.all6(
+  header.from(request, 'Foo', as_int) |> required()
+  header.from(request, 'Bar', as_int) |> fallback(3)
+  from(request, Header("X-Foo"), as_int)
+)
+```
+
+
+<!-- neither 400 or 422 get reported in the main application -->
+```rust
+perimeter.Report{
+  Report(
+    code -> title
+    detail
+  )
+}
+
+Report(PhantomLibrary){
+
+}
+
+perimeter.group(List(Report(Perimeter)))
+
+
+pgo.to_report(conn)(
+  case error<QueryError> {
+    SyntaxError -> Report(InputError, "Invalid SQL", "Could not process query")
+    ConnectionUnavailable -> Report(ServiceUnavailable, "DB unavailable")
+    // ConnectionDenied ->
+    MissingTable -> Report()
+    MissingColum
+    ConstraintError -> Report(Unprocessable, "Constraint Error")
+  }
+)
+
+// Meta map(String, String) Or Json
+
+try conn = db.connect(config)
+try server = listen(port)
+list.each(server.connections(server), handle)
+```
