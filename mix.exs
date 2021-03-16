@@ -30,7 +30,8 @@ defmodule PlumMail.MixProject do
       {:gleam_cowboy, "~> 0.2.2"},
       {:gleam_crypto, "~> 0.2"},
       {:gleam_http, "~> 2.0", override: true},
-      {:gleam_httpc, "~> 1.0"},
+      # gleam_sentry is hard coded to httpc 1.0.0 shouldn't be
+      {:gleam_httpc, "~> 1.0.1", override: true},
       {:gleam_json, "~> 0.1.0"},
       # {:gleam_sentry, "~> 0.1.1"},
       {:gleam_sentry, github: "midas-framework/gleam_sentry", override: true},
