@@ -1,3 +1,4 @@
+import gleam/dynamic
 import gleam/bit_string.{BitString}
 import gleam/io
 import gleam/list
@@ -7,8 +8,9 @@ import gleam/uri.{Uri}
 import gleam/http.{Response}
 import gleam/httpc
 import floki
+import linked_data
 import oembed
-import glance/preview.{EmbededHtml, Image, Page}
+import glance/preview.{EmbededHtml, Image, Page, Recipe}
 
 external fn unzip(BitString) -> BitString =
   "zlib" "gunzip"
@@ -61,14 +63,30 @@ pub fn scan_og(uri) {
       //   "meet.google.com" -> uri.to_string(uri)
       //   _ -> unwrap(get_url(document), uri.to_string(uri))
       // }
-      Page(
-        title: unwrap(get_title(document), host),
-        description: get_description(document),
-        image: get_image(document, uri),
-        url: url,
-      )
+      case fetch_structured_data(document) {
+        [] ->
+          Page(
+            title: unwrap(get_title(document), host),
+            description: get_description(document),
+            image: get_image(document, uri),
+            url: url,
+          )
+        [first, .._] -> {
+          let tuple(name, image, recipe_instructions) = first
+          Recipe(name, image, recipe_instructions)
+        }
+      }
     }
   }
+}
+
+fn fetch_structured_data(document) {
+  floki.find(document, "script[type='application/ld+json']")
+  |> list.filter_map(fn(x) {
+    let tuple(_, _, [text]) = dynamic.unsafe_coerce(dynamic.from(x))
+    linked_data.parse(text)
+  })
+  |> io.debug
 }
 
 fn lazy_or(result, fallback) {

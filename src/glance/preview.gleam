@@ -10,6 +10,8 @@ pub type Preview {
   ImageReel(title: String, images: List(String), url: String)
   // title can be path name if nothing better
   Table(title: String, fields: List(String), rows: List(List(json.Json)))
+  // schema.org
+  Recipe(name: String, image: String, recipe_instructions: List(String))
 }
 
 pub fn to_json(preview) {
@@ -52,6 +54,16 @@ pub fn to_json(preview) {
         tuple("title", json.string(title)),
         tuple("fields", json.list(list.map(fields, json.string))),
         tuple("rows", json.list(list.map(rows, json.list))),
+      ])
+    Recipe(name, image, recipe_instructions) ->
+      json.object([
+        tuple("item", json.string("schema.recipe")),
+        tuple("name", json.string(name)),
+        tuple("image", json.string(image)),
+        tuple(
+          "recipe_instructions",
+          json.list(list.map(recipe_instructions, json.string)),
+        ),
       ])
   }
 }
