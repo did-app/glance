@@ -35,6 +35,8 @@ defmodule PlumMail.MixProject do
       {:gleam_json, "~> 0.1.0"},
       # {:gleam_sentry, "~> 0.1.1"},
       {:gleam_sentry, github: "midas-framework/gleam_sentry", override: true},
+      {:perimeter, github: "midas-framework/perimeter"},
+
 
       {:floki,
        github: "midas-framework/floki",

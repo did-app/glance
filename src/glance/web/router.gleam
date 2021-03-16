@@ -9,7 +9,8 @@ import gleam/http.{Get, Options, Request, Response}
 import gleam/httpc
 import gleam/json
 import floki
-import glance.{BadCall}
+import perimeter/scrub.{RejectedInput, Report}
+import glance
 
 pub fn set_resp_json(response, data) {
   let body =
@@ -26,11 +27,7 @@ pub fn set_resp_json(response, data) {
 pub fn handle(request: Request(BitString), config: Nil) -> Response(BitBuilder) {
   case route(request, config) {
     Ok(response) -> response
-    Error(BadCall(detail)) ->
-      http.response(400)
-      |> http.set_resp_body(bit_builder.from_bit_string(bit_string.from_string(
-        detail,
-      )))
+    Error(report) -> scrub.to_response(report)
   }
   |> http.prepend_resp_header("access-control-allow-origin", "*")
   |> http.prepend_resp_header("access-control-allow-credentials", "true")
@@ -52,7 +49,7 @@ fn route(request: Request(BitString), config: Nil) {
       try uri =
         uri.parse(target)
         |> result.map_error(fn(_) {
-          BadCall("Query parameter must be a valid url")
+          Report(RejectedInput, "Invalid url", "Must be an absolute url")
         })
       try preview = glance.scan_uri(uri)
       http.response(200)
@@ -73,6 +70,11 @@ fn fetch_query(request) {
   let Request(query: query, ..) = request
   case query {
     Some(target) -> Ok(target)
-    None -> Error(BadCall("Request must have a query parameter"))
+    None ->
+      Error(Report(
+        RejectedInput,
+        "Invalid request",
+        "Request must have a query parameter",
+      ))
   }
 }
